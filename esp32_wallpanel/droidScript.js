@@ -1,17 +1,14 @@
 var components      = {status: false}
 var isProcessing    = false 
-var instructions    = [] 
+var instructions    = []
+var bt_name         = "HELLboard"
 
 function OnStart() {
     //Create a layout with objects vertically centered.
     lay = app.CreateLayout("linear", "VCenter")
 
     //Create Bluetooth serial object.
-    bt = app.CreateBluetoothSerial()
-    bt.SetOnConnect(bt_OnConnect)
-    bt.SetOnReceive(bt_OnReceive)
-    bt.SetSplitMode("End", "\n")
-    bt.Connect("HELLboard")
+    connect(bt_name)
 
     header = app.CreateText("[fa-truck] Iratxo autoka", 1, 0.1, "FontAwesome,Center");
     header.SetPadding(0, 0.01, 0, 0);
@@ -21,9 +18,18 @@ function OnStart() {
     lay.AddChild(header)
 }
 
-//Called when we are connected.
+function connect() {
+    bt = app.CreateBluetoothSerial()
+    bt.SetOnConnect(bt_OnConnect)
+    bt.SetOnReceive(bt_OnReceive)
+    bt.SetSplitMode("End", "\n")
+    bt.Connect(bt_name)
+}
+
 function bt_OnConnect(ok) {
     if(ok) {
+        app.ShowPopup(bt_name+"-ra konektatuta.")
+        
         addInstruction("readInputs")
         setInterval(function() {
             addInstruction("readInputs")
@@ -41,10 +47,14 @@ function addInstruction(command) {
 
 function execNextInstruction() {
     if(instructions.length > 0) {
-        var command = instructions.shift()
+        if(bt.IsConnected()) {
+            var command = instructions.shift()
 
-        isProcessing = true
-        bt.Write(command)
+            isProcessing = true
+            bt.Write(command)
+        } else {
+            connect()
+        }
     } else {
         isProcessing = false
     }
