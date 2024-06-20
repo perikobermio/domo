@@ -26,11 +26,13 @@ void loop() {
     doc["command"] = input;
 
     if (input == "readInputs") {
-      doc["outLight"]       = digitalRead(outLightPin);
-      doc["cabin_battery"]  = 66;
-      doc["van_battery"]    = 87;
-      doc["water"]          = 54;
-      doc["grey_water"]     = 98;
+      doc["outLight"]           = digitalRead(outLightPin);
+      doc["cabin_battery"]      = 66;
+      doc["van_battery"]        = 87;
+      doc["water"]              = 54;
+      doc["grey_water"]         = 98;
+      doc["cabin_battery_volt"] = 13.8;
+      doc["van_battery_volt"]   = 13.4;
     } else if (input == "outLightON") {
       digitalWrite(outLightPin, HIGH);
       doc["msg"]            = "Kanpoko argia piztuta";
@@ -45,3 +47,5 @@ void loop() {
     
   }
 }
+
+

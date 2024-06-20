@@ -25,11 +25,9 @@ function OnStart() {
 function bt_OnConnect(ok) {
     if(ok) {
         addInstruction("readInputs")
-        /*bt.Write("readInputs")
         setInterval(function() {
-            avoidUpdates(true)
-            bt.Write("readInputs") 
-        }, 10000);*/
+            addInstruction("readInputs")
+        }, 10000);
     } else {
         app.ShowPopup("Connection Failed");
         console.log("Connection Failed");
@@ -99,11 +97,25 @@ function createComponents(data) {
     row.SetSize(0.9, 0.2)
     row.SetMargins(0, 0.02, 0, 0)
 
-    components.cabin_battery    = createRange("[fa-battery-three-quarters] Kabinako bateria", data.cabin_battery)
+    components.cabin_battery        = createRange("[fa-battery-three-quarters] Kabinako bateria", data.cabin_battery)
     row.AddChild(components.cabin_battery)
 
-    components.van_battery      = createRange("[fa-battery-three-quarters] Barruko bateria", data.van_battery)
+    components.cabin_battery_volt   = createRange("[fa-bolt] Voltagea", data.cabin_battery_volt+"V", true)
+    row.AddChild(components.cabin_battery_volt)
+
+    lay.AddChild(row)
+
+    ////////////////////
+
+    row = app.CreateLayout("linear", "Horizontal");
+    row.SetSize(0.9, 0.2)
+    row.SetMargins(0, 0.02, 0, 0)
+
+    components.van_battery          = createRange("[fa-battery-three-quarters] Barruko bateria", data.van_battery)
     row.AddChild(components.van_battery)
+
+    components.van_battery_volt     = createRange("[fa-bolt] Voltagea", data.van_battery_volt+"V", true)
+    row.AddChild(components.van_battery_volt)
 
     lay.AddChild(row)
 
@@ -122,7 +134,7 @@ function createComponents(data) {
     lay.AddChild(row)
 }
 
-function createRange(title, v) {
+function createRange(title, v, literal) {
     // Create a layout for the battery card.
     var card = app.CreateLayout("linear", "Vertical");
     card.SetPadding(0.02, 0.02, 0.02, 0.01);
@@ -131,16 +143,18 @@ function createRange(title, v) {
     card.SetMargins(0.01, 0.02, 0.01, 0); // Margins for spacing
 
     // Create a Text element to display the battery title.
-    var title = app.CreateText(title, 0.8, 0.07, "FontAwesome,Center");
-    title.SetTextSize(16);
-    title.SetTextColor("#FFFFFF"); // Set text color to white
-    card.AddChild(title);
+    var title = app.CreateText(title, 0.8, 0.07, "FontAwesome,Center")
+    title.SetTextSize(16)
+    title.SetTextColor("#FFFFFF")
+    card.AddChild(title)
 
     // Create a Text element to display the battery percentage.
-    var level = app.CreateText("%"+v, 0.8, 0.1, "Center");
-    level.SetTextSize(20);
-    level.SetTextColor(getLevelColor(v)); // Set text color to red
-    card.AddChild(level);
+    value       = (literal)? v : "%"+v
+    var color   = (literal)? "#ffffff" : getLevelColor(v)
+    var level   = app.CreateText(value, 0.8, 0.1, "Center")
+    level.SetTextSize(20)
+    level.SetTextColor(color)
+    card.AddChild(level)
 
     return card;
 }
