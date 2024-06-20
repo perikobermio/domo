@@ -20,29 +20,28 @@ void loop() {
   if (SerialBT.available()) {
     String input = SerialBT.readString();
     input.trim();
-    Serial.println(input);
+    StaticJsonDocument<200> doc;
+    String response;
+
+    doc["command"] = input;
 
     if (input == "readInputs") {
-      StaticJsonDocument<200> doc;
       doc["outLight"]       = digitalRead(outLightPin);
       doc["cabin_battery"]  = 66;
       doc["van_battery"]    = 87;
       doc["water"]          = 54;
       doc["grey_water"]     = 98;
-
-      String inputs;
-      serializeJson(doc, inputs);
-
-      Serial.println(inputs);
-      SerialBT.println(inputs);
     } else if (input == "outLightON") {
       digitalWrite(outLightPin, HIGH);
-      Serial.println("Kanpoko argia piztuta");
+      doc["msg"]            = "Kanpoko argia piztuta";
     } else if (input == "outLightOFF") {
       digitalWrite(outLightPin, LOW);
-      Serial.println("Kanpoko argia itzalita");
+      doc["msg"]            = "Kanpoko argia itzalita";
     }
+
+    serializeJson(doc, response);
+    Serial.println(response);
+    SerialBT.println(response);
     
   }
-  delay(500);
 }

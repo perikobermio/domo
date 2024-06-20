@@ -1,4 +1,6 @@
-var components = {}
+var components      = {status: false}
+var isProcessing    = false 
+var instructions    = [] 
 
 function OnStart() {
     //Create a layout with objects vertically centered.
@@ -7,6 +9,7 @@ function OnStart() {
     //Create Bluetooth serial object.
     bt = app.CreateBluetoothSerial()
     bt.SetOnConnect(bt_OnConnect)
+    bt.SetOnReceive(bt_OnReceive)
     bt.SetSplitMode("End", "\n")
     bt.Connect("HELLboard")
 
@@ -21,26 +24,60 @@ function OnStart() {
 //Called when we are connected.
 function bt_OnConnect(ok) {
     if(ok) {
-        bt.SetOnReceive( function(inputs) {
-            var data            = JSON.parse(inputs)
-
-            createComponents(data)
-
-            bt.SetOnReceive(null)
-            app.AddLayout(lay)
-        } )
-        bt.Write("readInputs")
+        addInstruction("readInputs")
+        /*bt.Write("readInputs")
+        setInterval(function() {
+            avoidUpdates(true)
+            bt.Write("readInputs") 
+        }, 10000);*/
     } else {
         app.ShowPopup("Connection Failed");
         console.log("Connection Failed");
     }
 }
 
+function addInstruction(command) {
+    instructions.push(command)
+    if(!isProcessing) execNextInstruction()
+}
+
+function execNextInstruction() {
+    if(instructions.length > 0) {
+        var command = instructions.shift()
+
+        isProcessing = true
+        bt.Write(command)
+    } else {
+        isProcessing = false
+    }
+}
+
+function bt_OnReceive(inputs) {
+    var data = JSON.parse(inputs)
+
+    switch(data.command) {
+        case "readInputs": readInputs(data); break;
+    }
+
+    execNextInstruction()
+}
+
+function readInputs(data) {
+    if(components.status) {
+        console.log('updating')
+        console.log(components)
+    } else {
+        createComponents(data)
+        app.AddLayout(lay)
+        components.status = true
+    }
+}
+
 //Called when user touches the button.
 function outLight_OnTouch(state) {
     try {
-        if (state) bt.Write("outLightON")
-        else bt.Write("outLightOFF")
+        if (state)  addInstruction("outLightON")
+        else        addInstruction("outLightOFF")
     } catch (e) {
         app.ShowPopup("Connection Failed: " + e.message);
         console.log("Connection Failed: " + e.stack);
