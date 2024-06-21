@@ -2,6 +2,11 @@ var components      = {status: false}
 var isProcessing    = false 
 var instructions    = []
 var bt_name         = "HELLboard"
+var pass            = "d41d8cd98f00b204e9800998ecf8427e"
+var update_interval = 10000
+
+var water_min_value = 0
+var water_max_value = 4095
 
 function OnStart() {
     //Create a layout with objects vertically centered.
@@ -29,11 +34,13 @@ function connect() {
 function bt_OnConnect(ok) {
     if(ok) {
         app.ShowPopup(bt_name+"-ra konektatuta.")
-        
+
+        addInstruction(pass)
         addInstruction("readInputs")
+        
         setInterval(function() {
             addInstruction("readInputs")
-        }, 10000);
+        }, update_interval);
     } else {
         app.ShowPopup("Connection Failed");
         console.log("Connection Failed");
@@ -71,9 +78,9 @@ function bt_OnReceive(inputs) {
 }
 
 function readInputs(data) {
-    if(components.status) {
-        console.log('updating')
-        console.log(components)
+    if(components.status) { //onUpdate
+        components.water.level.SetTextColor(getLevelColor(getWaterLevel(data.water)))
+        components.water.level.SetText("%"+getWaterLevel(data.water))
     } else {
         createComponents(data)
         app.AddLayout(lay)
@@ -135,7 +142,7 @@ function createComponents(data) {
     row.SetSize(0.9, 0.2)
     row.SetMargins(0, 0.02, 0, 0)
 
-    components.water            = createRange("[fa-tint] Ur garbia", data.water)
+    components.water            = createRange("[fa-tint] Ur garbia", getWaterLevel(data.water) )
     row.AddChild(components.water)
 
     components.grey_water       = createRange("[fa-tint] Ur grisak", data.grey_water)
@@ -157,6 +164,7 @@ function createRange(title, v, literal) {
     title.SetTextSize(16)
     title.SetTextColor("#FFFFFF")
     card.AddChild(title)
+    card.title = title
 
     // Create a Text element to display the battery percentage.
     value       = (literal)? v : "%"+v
@@ -165,6 +173,7 @@ function createRange(title, v, literal) {
     level.SetTextSize(20)
     level.SetTextColor(color)
     card.AddChild(level)
+    card.level = level
 
     return card;
 }
@@ -182,4 +191,8 @@ function getLevelColor(v) {
     if(v<10) c = "#ff0800"
 
     return c
+}
+
+function getWaterLevel(v) {
+    return Math.round(v * 100 / water_max_value)
 }
