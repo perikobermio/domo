@@ -70,8 +70,8 @@ class Panel {
 
     _readInputs(self, data) {
         if(self.components.status) { //onUpdate
-            //self.components.water.level.SetTextColor(self._getLevelColor(self._getWaterLevel(data.water)))
-            //self.components.water.level.SetText("%"+self._getWaterLevel(data.water))
+            self.components.water.level.SetTextColor(self._getLevelColor(self._getWaterLevel(self, data.water)))
+            self.components.water.level.SetText("%"+self._getWaterLevel(self, data.water))
         } else {
             self._createComponents(self, data)
             app.AddLayout(self.components.lay)
