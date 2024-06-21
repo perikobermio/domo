@@ -1,7 +1,7 @@
 var components      = {status: false}
 var isProcessing    = false 
 var instructions    = []
-var bt_name         = "HELLboard"
+var bt_name         = "IratxoVan"
 var pass            = "d41d8cd98f00b204e9800998ecf8427e"
 var update_interval = 10000
 
@@ -9,7 +9,8 @@ var water_min_value = 0
 var water_max_value = 4095
 
 function OnStart() {
-    //Create a layout with objects vertically centered.
+    app.PreventScreenLock(false);
+
     lay = app.CreateLayout("linear", "VCenter")
 
     //Create Bluetooth serial object.
@@ -37,7 +38,7 @@ function bt_OnConnect(ok) {
 
         addInstruction(pass)
         addInstruction("readInputs")
-        
+
         setInterval(function() {
             addInstruction("readInputs")
         }, update_interval);
