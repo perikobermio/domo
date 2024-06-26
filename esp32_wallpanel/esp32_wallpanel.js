@@ -1,17 +1,21 @@
 class Panel {
 
-    bt              = null
-    bt_name         = "IratxoVan"
-    pass            = "d41d8cd98f00b204e9800998ecf8427e"
+    bt                      = null
+    bt_name                 = "IratxoVan"
+    pass                    = "d41d8cd98f00b204e9800998ecf8427e"
 
-    components      = {status: false}
-    isProcessing    = false 
-    instructions    = []
+    components              = {status: false}
+    isProcessing            = false 
+    instructions            = []
     
-    update_interval = 10000
+    update_interval_time    = 10000
+    update_interval_obj     = null
+    reconnect_interval_time = 10000
+    reconnect_interval_obj  = null
+    inactivity_time         = 5000
 
-    water_min_value = 0
-    water_max_value = 4095
+    water_min_value         = 0
+    water_max_value         = 4095
 
     constructor(params) {
         this.init()
@@ -21,17 +25,33 @@ class Panel {
         app.PreventScreenLock(false)
         this._connect(this)
 
-        this.components.lay = app.CreateLayout("linear", "VCenter")
+        this.components.lay                 = app.CreateLayout("linear", "VCenter")
+        this.components.lay.header          = app.CreateLayout("linear", "Horizontal")
 
-        let header = app.CreateText("[fa-truck] Iratxo autoka", 1, 0.1, "FontAwesome,Center");
-        header.SetPadding(0, 0.01, 0, 0);
-        header.SetTextSize(32);
-        header.SetBackColor("#332e21");
-        header.SetMargins(0.01, 0.01, 0.01, 0.05)
-        this.components.lay.AddChild(header)
+        this.components.lay.header.SetMargins(0, 0, 0, 0.05)
+        this.components.lay.header.SetBackColor("#332e21")
+
+        this.components.lay.header.text     = app.CreateText("[fa-truck] Iratxo autoka", 0.9, 0.1, "FontAwesome,Left")
+        this.components.lay.header.text.SetPadding(0.1, 0.02, 0, 0)
+        this.components.lay.header.text.SetTextSize(32)
+
+        this.components.lay.header.icon     = app.CreateText("[fa-bluetooth]", 0.1, 0.1, "FontAwesome,Right")
+        this.components.lay.header.icon.SetPadding(0, 0.02, 0.03, 0)
+        this.components.lay.header.icon.SetTextSize(32)
+        this.components.lay.header.icon.SetVisibility("Hide")
+
+        this.components.lay.header.AddChild(this.components.lay.header.text)
+        this.components.lay.header.AddChild(this.components.lay.header.icon)
+
+        this.components.lay.AddChild(this.components.lay.header)
+
+        app.AddLayout(this.components.lay)
     }
 
     _connect(self) {
+
+        if(self.update_interval_obj) clearInterval(update_interval_obj)
+        self.instructions = []
 
         self.bt = app.CreateBluetoothSerial()
         self.bt.SetOnConnect(socket => self._onBtConnect(self, socket))
@@ -43,18 +63,18 @@ class Panel {
     _onBtConnect(self, socket) {
 
         if(!socket) {
-            app.ShowPopup("Arazoak BT konexioan")
+            app.ShowPopup("Konexio bikoitza edo estaldura gabe dago. Itxaron segundu batzuk.")
             return false
         }
 
-        app.ShowPopup(self.bt_name+"-ra konektatuta.")
+        self.components.lay.header.icon.SetVisibility("Show")
 
         self._addInstruction(self, self.pass)
         self._addInstruction(self, "readInputs")
 
-        setInterval(function() {
+        self.update_interval_obj = setInterval(function() {
             self._addInstruction(self, "readInputs")
-        }, self.update_interval)
+        }, self.update_interval_time)
             
     }
 
@@ -74,7 +94,6 @@ class Panel {
             self.components.water.level.SetText("%"+self._getWaterLevel(self, data.water))
         } else {
             self._createComponents(self, data)
-            app.AddLayout(self.components.lay)
             self.components.status = true
         }
     }
@@ -168,9 +187,6 @@ class Panel {
             app.ShowPopup("Connection Failed: " + e.message)
         }
     }
-
-
-
 
     _addInstruction(self, command) {
         self.instructions.push(command)
