@@ -23,13 +23,19 @@ class Panel {
 
     init() {
         app.PreventScreenLock(false)
+        app.SetOrientation("Portrait")
+
         this._connect()
 
-        this.components.lay = app.CreateLayout("linear", "VCenter")
-        this._header()
-        this.components.lay.AddChild(this.components.lay.header)
+        this.components.mainlay             = app.CreateLayout("linear", "FillXY")
+        this.components.mainlay.scroller    = app.CreateScroller(1.0, 1.0)
+        this.components.lay                 = app.CreateLayout("linear", "VCenter")
 
-        app.AddLayout(this.components.lay)
+        this.components.mainlay.AddChild(this.components.mainlay.scroller)
+        this.components.mainlay.scroller.AddChild(this.components.lay)
+        this._header()
+
+        app.AddLayout(this.components.mainlay)
     }
 
     _header() {
@@ -49,6 +55,8 @@ class Panel {
 
         this.components.lay.header.AddChild(this.components.lay.header.text)
         this.components.lay.header.AddChild(this.components.lay.header.icon)
+
+        this.components.lay.AddChild(this.components.lay.header)
     }
 
     _connect(callback) {
@@ -162,24 +170,22 @@ class Panel {
         row.AddChild(self.components.grey_water)
     
         self.components.lay.AddChild(row)
+        
     }
 
     _createRange(self, caption, v, literal) {
-        // Create a layout for the battery card.
-        let card = app.CreateLayout("linear", "Vertical");
-        card.SetPadding(0.02, 0.02, 0.02, 0.01);
-        card.SetBackColor("#333333"); // Dark grey background
-        card.SetSize(0.45, 0.18); // 45% width and 25% height of the screen
-        card.SetMargins(0.01, 0.02, 0.01, 0); // Margins for spacing
+        let card = app.CreateLayout("linear", "Vertical")
+        card.SetPadding(0.02, 0.02, 0.02, 0.01)
+        card.SetBackColor("#333333")
+        card.SetSize(0.45, 0.18)
+        card.SetMargins(0.01, 0.02, 0.01, 0)
     
-        // Create a Text element to display the battery title.
         let title = app.CreateText(caption, 0.8, 0.07, "FontAwesome,Center")
         title.SetTextSize(16)
         title.SetTextColor("#FFFFFF")
         card.AddChild(title)
         card.title = title
     
-        // Create a Text element to display the battery percentage.
         const value       = (literal)? v : "%"+v
         const color = (literal)? "#ffffff" : self._getLevelColor(v)
         let level   = app.CreateText(value, 0.8, 0.1, "Center")
@@ -188,7 +194,7 @@ class Panel {
         card.AddChild(level)
         card.level = level
     
-        return card;
+        return card
     }
 
 
