@@ -10,9 +10,9 @@ class Panel {
     
     update_interval_time    = 10000
     update_interval_obj     = null
-    reconnect_interval_time = 10000
-    reconnect_interval_obj  = null
-    inactivity_time         = 5000
+    reconnect_interval_time = 5000
+
+    header_color            = "#40474d" //3610fsw
 
     water_min_value         = 0
     water_max_value         = 4095
@@ -23,13 +23,20 @@ class Panel {
 
     init() {
         app.PreventScreenLock(false)
-        this._connect(this)
+        this._connect()
 
-        this.components.lay                 = app.CreateLayout("linear", "VCenter")
+        this.components.lay = app.CreateLayout("linear", "VCenter")
+        this._header()
+        this.components.lay.AddChild(this.components.lay.header)
+
+        app.AddLayout(this.components.lay)
+    }
+
+    _header() {
         this.components.lay.header          = app.CreateLayout("linear", "Horizontal")
 
         this.components.lay.header.SetMargins(0, 0, 0, 0.05)
-        this.components.lay.header.SetBackColor("#332e21")
+        this.components.lay.header.SetBackColor(this.header_color)
 
         this.components.lay.header.text     = app.CreateText("[fa-truck] Iratxo autoka", 0.9, 0.1, "FontAwesome,Left")
         this.components.lay.header.text.SetPadding(0.1, 0.02, 0, 0)
@@ -42,39 +49,46 @@ class Panel {
 
         this.components.lay.header.AddChild(this.components.lay.header.text)
         this.components.lay.header.AddChild(this.components.lay.header.icon)
-
-        this.components.lay.AddChild(this.components.lay.header)
-
-        app.AddLayout(this.components.lay)
     }
 
-    _connect(self) {
+    _connect(callback) {
 
-        if(self.update_interval_obj) clearInterval(update_interval_obj)
-        self.instructions = []
+        if(this.update_interval_obj)    clearInterval(this.update_interval_obj)
+        this.instructions = []
 
-        self.bt = app.CreateBluetoothSerial()
-        self.bt.SetOnConnect(socket => self._onBtConnect(self, socket))
-        self.bt.SetOnReceive(inputs => self._onBtReceive(self, inputs))
-        self.bt.SetSplitMode("End", "\n")
-        self.bt.Connect(self.bt_name)
+        if(this.bt) this.bt.Disconnect()
+        this.bt = app.CreateBluetoothSerial()
+        this.bt.SetOnConnect(socket => this._onBtConnect(this, socket, callback))
+        this.bt.SetOnReceive(inputs => this._onBtReceive(this, inputs))
+        this.bt.SetSplitMode("End", "\n")
+        this.bt.Connect(this.bt_name)
     }
 
-    _onBtConnect(self, socket) {
+    _disconnect(callback) {
+
+        if(this.update_interval_obj)    clearInterval(this.update_interval_obj)
+        this.instructions = []
+        this.components.lay.header.icon.SetVisibility("Hide")
+
+        this.bt.Disconnect()
+    }
+
+    _onBtConnect(self, socket, callback) {
 
         if(!socket) {
             app.ShowPopup("Konexio bikoitza edo estaldura gabe dago. Itxaron segundu batzuk.")
+            setTimeout(() => self._connect(), self.reconnect_interval_time)
             return false
         }
 
         self.components.lay.header.icon.SetVisibility("Show")
 
         self._addInstruction(self, self.pass)
-        self._addInstruction(self, "readInputs")
 
-        self.update_interval_obj = setInterval(function() {
-            self._addInstruction(self, "readInputs")
-        }, self.update_interval_time)
+        if(callback)    callback()
+        else            self._addInstruction(self, "readInputs")
+
+        self.update_interval_obj = setInterval(function() { self._addInstruction(self, "readInputs") }, self.update_interval_time)   
             
     }
 
@@ -181,8 +195,14 @@ class Panel {
 
     _outLight_OnTouch(self, state) {
         try {
-            if (state)  self._addInstruction(self, "outLightON")
-            else        self._addInstruction(self, "outLightOFF")
+            const action = () => {
+                if (state)  self._addInstruction(self, "outLightON")
+                else        self._addInstruction(self, "outLightOFF")
+            }
+
+            if(self.bt.IsConnected())   action()
+            else                        self._connect(self, action)
+            
         } catch (e) {
             app.ShowPopup("Connection Failed: " + e.message)
         }
@@ -200,9 +220,13 @@ class Panel {
     
                 self.isProcessing = true
                 self.bt.Write(command)
-            } else  self._connect(self)
+            } else {
+                self._connect(self)
+            }
             
-        } else      self.isProcessing = false
+        } else {
+            self.isProcessing   = false
+        }
     }
 
     _getLevelColor(v) {
@@ -226,6 +250,16 @@ class Panel {
 
 }
 
+let p
+
 function OnStart() {
-    new Panel()
+    p = new Panel()
+}
+
+function OnPause() {
+    p._disconnect()   
+}
+
+function OnResume() {
+    p._connect()   
 }
