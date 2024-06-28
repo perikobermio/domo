@@ -1,3 +1,5 @@
+app.LoadScript('widgets.js')
+
 class Panel {
 
     bt                      = null
@@ -12,7 +14,7 @@ class Panel {
     update_interval_obj     = null
     reconnect_interval_time = 5000
 
-    header_color            = "#40474d" //3610fsw
+    header_color            = "#40474d"
 
     water_min_value         = 0
     water_max_value         = 4095
@@ -24,6 +26,18 @@ class Panel {
     init() {
         app.PreventScreenLock(false)
         app.SetOrientation("Portrait")
+
+        //proba
+        /*let termo = new Widget(40, '[fa-thermometer] Termometroa')
+        termo.maxValue = 80
+        termo.minValue = -80
+        let a = app.CreateLayout("linear", "FillXY")
+    
+        a.AddChild(termo.createFilledRange())
+        
+        app.AddLayout(a)
+        return false*/
+        ////////////
 
         this._connect()
 
@@ -122,16 +136,23 @@ class Panel {
 
     _createComponents(self, data) {
 
+        let row = app.CreateLayout("linear", "Horizontal")
+        row.SetSize(0.9, 0.1)
+        row.SetMargins(0, 0.02, 0, 0)
+
         self.components.outLight = app.CreateToggle("Kanpoko argia", 0.5, 0.1, "FontAwesome")
         self.components.outLight.SetOnTouch(state => self._outLight_OnTouch(self, state))
-        self.components.lay.AddChild(self.components.outLight)
-    
         const outLightState   = (parseInt(data.outLight) == 1)? true : false
         self.components.outLight.SetChecked(outLightState)
+
+        row.AddChild(self.components.outLight)
+        //row.AddChild(createCircleRange())
+
+        self.components.lay.AddChild(row)
+
+        ///////////////////
     
-        ////////////////////
-    
-        let row = app.CreateLayout("linear", "Horizontal");
+        row = app.CreateLayout("linear", "Horizontal")
         row.SetSize(0.9, 0.2)
         row.SetMargins(0, 0.02, 0, 0)
     
@@ -145,7 +166,7 @@ class Panel {
     
         ////////////////////
     
-        row = app.CreateLayout("linear", "Horizontal");
+        row = app.CreateLayout("linear", "Horizontal")
         row.SetSize(0.9, 0.2)
         row.SetMargins(0, 0.02, 0, 0)
     
