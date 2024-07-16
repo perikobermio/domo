@@ -28,14 +28,16 @@ class Panel {
         app.SetOrientation("Portrait")
 
         //proba
-        /*let termo = new Widget(40, '[fa-thermometer] Termometroa')
-        termo.maxValue = 80
-        termo.minValue = -80
+        /*let termo = new Widget(20, '[fa-thermometer] Kalefazinue')
+        termo.maxValue = 40
+        termo.minValue = -10
+        
         let a = app.CreateLayout("linear", "FillXY")
     
         a.AddChild(termo.createFilledRange())
         
         app.AddLayout(a)
+        
         return false*/
         ////////////
 
@@ -137,17 +139,45 @@ class Panel {
     _createComponents(self, data) {
 
         let row = app.CreateLayout("linear", "Horizontal")
-        row.SetSize(0.9, 0.1)
+        row.SetSize(0.9, 0.15)
         row.SetMargins(0, 0.02, 0, 0)
 
         self.components.outLight = app.CreateToggle("Kanpoko argia", 0.5, 0.1, "FontAwesome")
         self.components.outLight.SetOnTouch(state => self._outLight_OnTouch(self, state))
         const outLightState   = (parseInt(data.outLight) == 1)? true : false
         self.components.outLight.SetChecked(outLightState)
-
         row.AddChild(self.components.outLight)
-        //row.AddChild(createCircleRange())
+        
+        self.components.inLight = app.CreateToggle("Barruko argia", 0.5, 0.1, "FontAwesome")
+        row.AddChild(self.components.inLight)
 
+        self.components.lay.AddChild(row)
+        
+        ///////////////////
+        
+        row = app.CreateLayout("linear", "Horizontal")
+        row.SetSize(0.9, 0.3)
+        row.SetMargins(0, 0.02, 0, 0)
+        
+        let termo = new Widget(20, '[fa-thermometer] Berogailua')
+        termo.maxValue = 40
+        termo.minValue = -10
+        
+        row.AddChild(termo.createFilledRange())
+        termo.even.SetOnTouchUp((c) => {
+            let nh = termo._onChange(termo, c.y[0])
+        })
+        
+        let shower = new Widget(40, '[fa-shower] Ur beroa')
+        shower.maxValue = 70
+        shower.backColor = "#1560d4"
+        shower.fillColor = "#8aabde"
+        
+        row.AddChild(shower.createFilledRange())
+        shower.even.SetOnTouchUp((c) => {
+            let nh = shower._onChange(shower, c.y[0])
+        })
+        
         self.components.lay.AddChild(row)
 
         ///////////////////
@@ -182,7 +212,7 @@ class Panel {
     
         row = app.CreateLayout("linear", "Horizontal");
         row.SetSize(0.9, 0.2)
-        row.SetMargins(0, 0.02, 0, 0)
+        row.SetMargins(0, 0.02, 0, 0.02)
     
         self.components.water            = self._createRange(self, "[fa-tint] Ur garbia", self._getWaterLevel(self, data.water) )
         row.AddChild(self.components.water)
