@@ -31,10 +31,12 @@ class Panel {
         /*let termo = new Widget(20, '[fa-thermometer] Kalefazinue')
         termo.maxValue = 40
         termo.minValue = -10
+        let shower = new Widget(40, '[fa-shower] Ur beroa')
         
         let a = app.CreateLayout("linear", "FillXY")
     
-        a.AddChild(termo.createFilledRange())
+        a.AddChild(termo.createFilledRange(termo))
+        a.AddChild(shower.createFilledRange(shower))
         
         app.AddLayout(a)
         
@@ -159,24 +161,41 @@ class Panel {
         row.SetSize(0.9, 0.3)
         row.SetMargins(0, 0.02, 0, 0)
         
-        let termo = new Widget(20, '[fa-thermometer] Berogailua')
-        termo.maxValue = 40
-        termo.minValue = -10
+        let termo               = new Widget(20, '[fa-thermometer] Berogailua')
+        termo.maxValue          = 40
+        termo.minValue          = -10
+        self.components.termo   = termo.createFilledRange()
         
-        row.AddChild(termo.createFilledRange())
         termo.even.SetOnTouchUp((c) => {
-            let nh = termo._onChange(termo, c.y[0])
+            let nh = termo.onChange(c.y[0])
+        })
+        termo.btn_minus.SetOnTouch(() => {
+            let nh = termo.onMinus()
+        })
+        termo.btn_plus.SetOnTouch(() => {
+            let nh = termo.onPlus()
         })
         
-        let shower = new Widget(40, '[fa-shower] Ur beroa')
-        shower.maxValue = 70
-        shower.backColor = "#1560d4"
-        shower.fillColor = "#8aabde"
+        row.AddChild(self.components.termo)
         
-        row.AddChild(shower.createFilledRange())
+        
+        let shower              = new Widget(40, '[fa-shower] Ur beroa')
+        shower.maxValue         = 70
+        shower.backColor        = "#1560d4"
+        shower.fillColor        = "#8aabde"
+        self.components.shower  = shower.createFilledRange()
+        
         shower.even.SetOnTouchUp((c) => {
-            let nh = shower._onChange(shower, c.y[0])
+            let nh = shower.onChange(c.y[0])
         })
+        shower.btn_minus.SetOnTouch(() => {
+            let nh = shower.onMinus()
+        })
+        shower.btn_plus.SetOnTouch(() => {
+            let nh = shower.onPlus()
+        })
+        
+        row.AddChild(self.components.shower)
         
         self.components.lay.AddChild(row)
 
