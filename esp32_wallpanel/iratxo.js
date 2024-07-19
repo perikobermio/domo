@@ -1,4 +1,4 @@
-app.LoadScript('widgets.js')
+app.LoadScript('RangeColumn.js')
 
 class Panel {
 
@@ -161,10 +161,8 @@ class Panel {
         row.SetSize(0.9, 0.3)
         row.SetMargins(0, 0.02, 0, 0)
         
-        let termo               = new Widget(20, '[fa-thermometer] Berogailua')
-        termo.maxValue          = 40
-        termo.minValue          = -10
-        self.components.termo   = termo.createFilledRange()
+        let termo = new RangeColumn(20, '[fa-thermometer] Berogailua', {maxValue: 40, minValue: -10})
+        self.components.termo = termo.layout
         
         termo.even.SetOnTouchUp((c) => {
             let nh = termo.onChange(c.y[0])
@@ -176,14 +174,10 @@ class Panel {
             let nh = termo.onPlus()
         })
         
-        row.AddChild(self.components.termo)
+        row.AddChild(termo.layout)
         
-        
-        let shower              = new Widget(40, '[fa-shower] Ur beroa')
-        shower.maxValue         = 70
-        shower.backColor        = "#1560d4"
-        shower.fillColor        = "#8aabde"
-        self.components.shower  = shower.createFilledRange()
+        let shower = new RangeColumn(40, '[fa-shower] Ur beroa', {maxValue: 70, backColor: "#1560d4", fillColor: "#8aabde"})
+        self.components.shower = shower.layout
         
         shower.even.SetOnTouchUp((c) => {
             let nh = shower.onChange(c.y[0])
@@ -195,7 +189,7 @@ class Panel {
             let nh = shower.onPlus()
         })
         
-        row.AddChild(self.components.shower)
+        row.AddChild(shower.layout)
         
         self.components.lay.AddChild(row)
 
